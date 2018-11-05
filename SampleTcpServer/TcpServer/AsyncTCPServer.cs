@@ -1,24 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 
 namespace TcpServer
 {
     //TcpListener实现异步TCP服务器
     public class AsyncTCPServer : IDisposable
     {
-        //客户端ID(自增)
-        private long m_ClientID = 1000;
-
         //客户端会话列表
         private readonly Dictionary<long, TCPClientSession> m_Clients;
 
         private bool disposed;
-        //当前的连接的客户端数
-        public int m_ClientCount { get; private set; }
+
+        //客户端ID(自增)
+        private long m_ClientID = 1000;
 
         //服务器使用的异步TcpListener
         private TcpListener m_Listener;
@@ -47,6 +43,9 @@ namespace TcpServer
             m_Listener.Server.NoDelay = NetworkDefine.UseNoDelay;
             m_Listener.AllowNatTraversal(true);
         }
+
+        //当前的连接的客户端数
+        public int m_ClientCount { get; private set; }
 
         //服务器是否正在运行
         public bool IsRunning { get; private set; }
@@ -142,7 +141,6 @@ namespace TcpServer
                 {
                     _RecvSize = _Stream.EndRead(ar);
                     if (_RecvSize == 0) //已经断开
-                    {
                         lock (m_Clients)
                         {
                             m_Clients.Remove(_Session.ClientID);
@@ -150,7 +148,6 @@ namespace TcpServer
                             OnClientDisconnected(_Session);
                             return;
                         }
-                    }
 
                     //保存消息并继续接受
                     _Session.SaveMsgToBuffer(_RecvSize);
@@ -166,9 +163,9 @@ namespace TcpServer
                         return;
                     }
                 }
-                             
+
                 //触发数据收到事件
-                OnDataReceived(_Session);
+                OnDataRecevied(_Session);
             }
         }
 
@@ -207,6 +204,7 @@ namespace TcpServer
 
         //连接建立事件
         public event EventHandler<TCPClientSession> ClientConnected;
+
         private void OnClientConnected(TCPClientSession session)
         {
             ClientConnected?.Invoke(this, session);
@@ -214,6 +212,7 @@ namespace TcpServer
 
         //连接断开事件
         public event EventHandler<TCPClientSession> ClientDisconnected;
+
         private void OnClientDisconnected(TCPClientSession session)
         {
             m_ClientCount--;
@@ -222,27 +221,29 @@ namespace TcpServer
         }
 
         //接收到数据事件
-        public event EventHandler<TCPClientSession> DataReceived;
-        private void OnDataReceived(TCPClientSession session)
+        public event EventHandler<TCPClientSession> DataRecevied;
+
+        private void OnDataRecevied(TCPClientSession session)
         {
-            DataReceived?.Invoke(this, session);
+            DataRecevied?.Invoke(this, session);
         }
 
         //数据发送完毕事件
         public event EventHandler<TCPClientSession> CompletedSend;
+
         private void OnCompletedSend(TCPClientSession session)
         {
             CompletedSend?.Invoke(this, session);
         }
 
         //关闭一个与客户端之间的会话
-        public void Close(TCPClientSession _Session, bool _Remove = true)
+        public void Close(TCPClientSession pSession, bool pRemove = true)
         {
-            if (_Session != null)
+            if (pSession != null)
             {
-                _Session.Close();
-                if(_Remove)
-                    m_Clients.Remove(_Session.ClientID);
+                pSession.Close();
+                if (pRemove)
+                    m_Clients.Remove(pSession.ClientID);
                 m_ClientCount--;
             }
         }
@@ -269,6 +270,7 @@ namespace TcpServer
                     catch (SocketException)
                     {
                     }
+
                 disposed = true;
             }
         }

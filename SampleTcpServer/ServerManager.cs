@@ -11,10 +11,10 @@ namespace SampleTcpServer
 {
     public class ServerManager
     {
-        public Action<SocketRecivedData> m_OnReciveMsg;
+        public Action<SocketReceviedData> m_OnReciveMsg;
 
         private AsyncTCPServer m_Server;
-        private readonly Queue<SocketRecivedData> m_Queue = new Queue<SocketRecivedData>(16);
+        private readonly Queue<SocketReceviedData> m_Queue = new Queue<SocketReceviedData>(16);
 
         public void Init()
         {
@@ -22,7 +22,7 @@ namespace SampleTcpServer
 
             m_Server.ClientConnected += OnClickConnected;
             m_Server.ClientDisconnected += OnClickDisconnected;
-            m_Server.DataReceived += OnDateRecevied;
+            m_Server.DataRecevied += OnDataRecevied;
         }
 
         private bool IsStoped = false;
@@ -77,7 +77,7 @@ namespace SampleTcpServer
             MainForm.Ins.OnDisconnected(pSession);
         }
 
-        private void OnDateRecevied(object pSender, TCPClientSession pSession)
+        private void OnDataRecevied(object pSender, TCPClientSession pSession)
         {
             lock (pSession.MsgBuffer)
             {
@@ -110,7 +110,7 @@ namespace SampleTcpServer
 
                     lock (m_Queue)
                     {
-                        m_Queue.Enqueue(new SocketRecivedData
+                        m_Queue.Enqueue(new SocketReceviedData
                         {
                             mMsgData = _MsgData,
                             mMsgID = MsgID
@@ -125,9 +125,15 @@ namespace SampleTcpServer
     }
 
     //接收到但是未被解析的消息
-    public class SocketRecivedData
+    public class SocketReceviedData
     {
-        public byte[] mMsgData;
-        public int mMsgID;
+        public byte[] m_MsgData;
+        public int m_MsgId;
+
+        public SocketReceviedData(byte[] pMsgData, int pMsgId)
+        {
+            m_MsgData = pMsgData;
+            m_MsgId = pMsgId;
+        }
     }
 }
