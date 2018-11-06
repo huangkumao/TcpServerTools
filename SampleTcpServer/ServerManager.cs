@@ -11,18 +11,21 @@ namespace SampleTcpServer
 {
     public class ServerManager
     {
-        public Action<SocketReceviedData> m_OnReciveMsg;
+        public Action<SocketReceivedData> m_OnReciveMsg;
 
         private AsyncTCPServer m_Server;
-        private readonly Queue<SocketReceviedData> m_Queue = new Queue<SocketReceviedData>(16);
+        private readonly Queue<SocketReceivedData> m_Queue = new Queue<SocketReceivedData>(16);
 
-        public void Init()
+        public Dictionary<long, TCPClientSession> m_AllClients => m_Server.m_Clients;
+
+        public void Init(int pPort = 9988)
         {
-            m_Server = new AsyncTCPServer(9988);
+            m_Server = new AsyncTCPServer(pPort);
 
-            m_Server.ClientConnected += OnClickConnected;
-            m_Server.ClientDisconnected += OnClickDisconnected;
-            m_Server.DataRecevied += OnDataRecevied;
+            m_Server.ClientConnected += OnClientConnected;
+            m_Server.ClientDisconnected += OnClientDisconnected;
+            m_Server.DataReceived += OnDataReceived;
+            m_Server.ClientClosed += OnClientClosed;
         }
 
         private bool IsStoped = false;
@@ -65,19 +68,24 @@ namespace SampleTcpServer
             IsStoped = true;
         }
 
-        private void OnClickConnected(object pSender, TCPClientSession pSession)
+        private void OnClientConnected(object pSender, TCPClientSession pSession)
         {
             MainForm.Ins.UpdateCount(m_Server.m_ClientCount);
             MainForm.Ins.OnConnected(pSession);
         }
 
-        private void OnClickDisconnected(object pSender, TCPClientSession pSession)
+        private void OnClientDisconnected(object pSender, TCPClientSession pSession)
         {
             MainForm.Ins.UpdateCount(m_Server.m_ClientCount);
             MainForm.Ins.OnDisconnected(pSession);
         }
 
-        private void OnDataRecevied(object pSender, TCPClientSession pSession)
+        private void OnClientClosed(object pSender, TCPClientSession pSession)
+        {
+            MainForm.Ins.OnDisconnected(pSession);
+        }
+
+        private void OnDataReceived(object pSender, TCPClientSession pSession)
         {
             lock (pSession.MsgBuffer)
             {
@@ -89,6 +97,7 @@ namespace SampleTcpServer
                 MsgBuffer.ReadBytes(_MsgData, 0, MsgLen);
                 MsgBuffer.Clear();
                 m_Server.Send(pSession, _MsgData);
+                pSession.UpdateSendInfo(MsgLen);
 
                 /*while (MsgBuffer.ReadableBytes() >= 8) //包头总长度
                 {
@@ -110,7 +119,7 @@ namespace SampleTcpServer
 
                     lock (m_Queue)
                     {
-                        m_Queue.Enqueue(new SocketReceviedData
+                        m_Queue.Enqueue(new SocketReceivedData
                         {
                             mMsgData = _MsgData,
                             mMsgID = MsgID
@@ -125,12 +134,12 @@ namespace SampleTcpServer
     }
 
     //接收到但是未被解析的消息
-    public class SocketReceviedData
+    public class SocketReceivedData
     {
         public byte[] m_MsgData;
         public int m_MsgId;
 
-        public SocketReceviedData(byte[] pMsgData, int pMsgId)
+        public SocketReceivedData(byte[] pMsgData, int pMsgId)
         {
             m_MsgData = pMsgData;
             m_MsgId = pMsgId;

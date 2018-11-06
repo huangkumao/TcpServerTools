@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.btnStartServer = new System.Windows.Forms.Button();
             this.btnStopServer = new System.Windows.Forms.Button();
             this.ListView = new System.Windows.Forms.ListView();
@@ -40,9 +41,13 @@
             this.Status = new System.Windows.Forms.StatusStrip();
             this.ConnectCount = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.PreSecSendBytes = new System.Windows.Forms.ToolStripStatusLabel();
+            this.toolStripStatusLabel2 = new System.Windows.Forms.ToolStripStatusLabel();
+            this.PreSecReceBytes = new System.Windows.Forms.ToolStripStatusLabel();
             this.ServerState = new System.Windows.Forms.ToolStripStatusLabel();
             this.label1 = new System.Windows.Forms.Label();
             this.ServerPort = new System.Windows.Forms.TextBox();
+            this.FlowTimer = new System.Windows.Forms.Timer(this.components);
             this.Status.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -116,9 +121,13 @@
             // 
             // Status
             // 
+            this.Status.BackColor = System.Drawing.Color.Bisque;
             this.Status.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.ConnectCount,
             this.toolStripStatusLabel1,
+            this.PreSecSendBytes,
+            this.toolStripStatusLabel2,
+            this.PreSecReceBytes,
             this.ServerState});
             this.Status.Location = new System.Drawing.Point(0, 369);
             this.Status.Name = "Status";
@@ -134,8 +143,26 @@
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(467, 20);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(352, 20);
             this.toolStripStatusLabel1.Spring = true;
+            // 
+            // PreSecSendBytes
+            // 
+            this.PreSecSendBytes.Name = "PreSecSendBytes";
+            this.PreSecSendBytes.Size = new System.Drawing.Size(34, 20);
+            this.PreSecSendBytes.Text = "0B/s";
+            // 
+            // toolStripStatusLabel2
+            // 
+            this.toolStripStatusLabel2.Image = global::SampleTcpServer.Properties.Resources.communication;
+            this.toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            this.toolStripStatusLabel2.Size = new System.Drawing.Size(16, 20);
+            // 
+            // PreSecReceBytes
+            // 
+            this.PreSecReceBytes.Name = "PreSecReceBytes";
+            this.PreSecReceBytes.Size = new System.Drawing.Size(34, 20);
+            this.PreSecReceBytes.Text = "0B/s";
             // 
             // ServerState
             // 
@@ -160,6 +187,11 @@
             this.ServerPort.Size = new System.Drawing.Size(45, 21);
             this.ServerPort.TabIndex = 6;
             this.ServerPort.Text = "9988";
+            // 
+            // FlowTimer
+            // 
+            this.FlowTimer.Interval = 1000;
+            this.FlowTimer.Tick += new System.EventHandler(this.FlowTimer_Tick);
             // 
             // MainForm
             // 
@@ -188,7 +220,7 @@
 
         private System.Windows.Forms.Button btnStartServer;
         private System.Windows.Forms.Button btnStopServer;
-        private System.Windows.Forms.ListView ListView;
+        public System.Windows.Forms.ListView ListView;
         public System.Windows.Forms.ColumnHeader ClientID;
         public System.Windows.Forms.ColumnHeader SendCount;
         public System.Windows.Forms.ColumnHeader SendByte;
@@ -201,6 +233,10 @@
         public System.Windows.Forms.ColumnHeader State;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox ServerPort;
+        private System.Windows.Forms.Timer FlowTimer;
+        private System.Windows.Forms.ToolStripStatusLabel PreSecSendBytes;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
+        private System.Windows.Forms.ToolStripStatusLabel PreSecReceBytes;
     }
 }
 
